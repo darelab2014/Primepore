@@ -91,6 +91,8 @@ f5c eventalign -r combined_fastq -g reference.fa -b alignment_sorted_bam --slow5
 ## 2. Ground truth alignment and data preprocessing
 * Optional: If want to retrain the model using your own data, you need to align it with the ground truth.
 ```
-# The input files contain fastq file 'combined_fastq' and blow5 file 'file.blow5'
-python align_label.py  -f eventalign_output.csv  -t template_output_folder -o output_file_folder -g groundtruth_file 
+# The input files contain event alignment file 'eventalign_output.csv', template output folder 'template_output_folder', finally output folder 'output_file_folder' and groundtruth file 'groundtruth_file'
+python align_label.py  -f eventalign_output.csv  -t template_output_folder -o output_file_folder -g groundtruth_file
+# The input files contain raw current file 'file.blow5', template output folder 'template_output_folder', align_label output folder 'align_label_folder' and finally output folder 'output_file_folder'
+python align_raw_current.py -b file.blow5 -t template_output_folder -a align_label_folder -o output_file_folder
 ```
