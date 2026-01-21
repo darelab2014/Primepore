@@ -96,3 +96,8 @@ python align_label.py  -f eventalign_output.csv  -t template_output_folder -o ou
 # The input files contain raw current file 'file.blow5', template output folder 'template_output_folder', align_label output folder 'align_label_folder' and finally output folder 'output_file_folder'
 python align_raw_current.py -b file.blow5 -t template_output_folder -a align_label_folder -o output_file_folder
 ```
+* Required: Whether training or inference using your own data, feature extraction is necessary.
+```
+# The input files contain align_raw_current output folder 'output_file_folder' and template output folder 'template_output_folder', finally output file 'output_feature.feather'
+python feature_extraction.py -a output_file_folder -t template_output_folder
+```
