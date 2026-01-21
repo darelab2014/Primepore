@@ -106,9 +106,7 @@ python feature_extraction.py -a output_file_folder -t template_output_folder
 ## 3. Classification model training and inference
 * Classification model training
 ```
-# The input files contain event alignment file 'eventalign_output.csv', template output folder 'template_output_folder', finally output folder 'output_file_folder' and groundtruth file 'groundtruth_file'
-python align_label.py  -f eventalign_output.csv  -t template_output_folder -o output_file_folder -g groundtruth_file
-# The input files contain raw current file 'file.blow5', template output folder 'template_output_folder', align_label output folder 'align_label_folder' and finally output folder 'output_file_folder'
-python align_raw_current.py -b file.blow5 -t template_output_folder -a align_label_folder -o output_file_folder
+# The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder'.Optional model training input parameters: -e (epochs, default 100), -b (batch size, default 512), -d (device, default cuda)
+python Classification_model_training.py -f feature_folder -m model_saved_folder
 ```
 * Classification model inference
