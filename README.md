@@ -111,6 +111,17 @@ python Classification_model_training.py -f feature_folder -m model_saved_folder
 ```
 * Classification model inference
 ```
+# The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder' and inference result folder 'classification_inference_result_folder'. Optional model training input parameters: -b (batch size, default 512), -d (device, default cuda)
+python Classification_model_inference.py -f feature_folder -m model_saved_folder -o classification_inference_result_folder
+```
+## 4. Regression model training and inference
+* Regression model training
+```
+# The input files contain classification inference_result_folder 'classification_inference_result_folder', model save folder 'model_saved_folder', and the processed data template folder 'processed_data_template_floder'. Optional model training input parameters: -e (epochs, default 100), -d (device, default cuda)
+python Regression_model_training.py -f classification_inference_result_folder -t processed_data_template_floder -m model_saved_folder
+```
+* Regression model inference
+```
 # The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder' and inference result folder 'inference_result_folder'. Optional model training input parameters: -b (batch size, default 512), -d (device, default cuda)
 python Classification_model_inference.py -f feature_folder -m model_saved_folder -o inference_result_folder
 ```
