@@ -106,7 +106,11 @@ python feature_extraction.py -a output_file_folder -t template_output_folder
 ## 3. Classification model training and inference
 * Classification model training
 ```
-# The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder'.Optional model training input parameters: -e (epochs, default 100), -b (batch size, default 512), -d (device, default cuda)
+# The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder'. Optional model training input parameters: -e (epochs, default 100), -b (batch size, default 512), -d (device, default cuda)
 python Classification_model_training.py -f feature_folder -m model_saved_folder
 ```
 * Classification model inference
+```
+# The input files contain feature file folder 'feature_folder', model save folder 'model_saved_folder' and inference result folder 'inference_result_folder'. Optional model training input parameters: -b (batch size, default 512), -d (device, default cuda)
+python Classification_model_inference.py -f feature_folder -m model_saved_folder -o inference_result_folder
+```
