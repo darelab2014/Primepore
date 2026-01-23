@@ -125,3 +125,8 @@ python Regression_model_training.py -f classification_inference_result_folder -t
 # The input files contain classification inference_result_folder 'classification_inference_result_folder', model save folder 'model_saved_folder' and inference result folder 'regression_inference_result_folder'. Optional model training input parameter:-d (device, default cuda)
 python Regression_model_inference.py -f classification_inference_result_folder -m model_saved_folder -o regression_inference_result_folder
 ```
+## 5. Clustering (single molecule label output)
+```
+# The input files contain classification inference_result_folder 'classification_inference_result_folder', model save folder 'model_saved_folder' and the processed data template folder 'processed_data_template_floder'. Optional model training input parameters: -e (epochs, default 100), -d (device, default cuda)
+python Regression_model_training.py -f classification_inference_result_folder -t processed_data_template_floder -m model_saved_folder
+```
