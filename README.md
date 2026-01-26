@@ -49,6 +49,7 @@ Primepore is a high-performance software tool designed to detect and quantify th
 | Tool | Usage |
 | :------------ |:---------------:|
 | torch | an open source Python machine learning library|
+| read5 | a python wrapper to read fast5, slow5/blow5 and pod5 files|
 # Installation
 It may take several minutes to install  
 ```
