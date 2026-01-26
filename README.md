@@ -130,3 +130,5 @@ python Regression_model_inference.py -f classification_inference_result_folder -
 # The input files contain regression inference_result_folder 'regression_inference_result_folder' and the single molecule result folder 'single_molecule_result_folder'. Optional model training input parameters: -e (epochs, default 100), -d (device, default cuda)
 python Single_molecule_results.py -f regression_inference_result_folder -o single_molecule_result_folder
 ```
+# Getting help
+We appreciate your feedback and questions. You can report an error or suggestions related to Primepore as an issue on github.
