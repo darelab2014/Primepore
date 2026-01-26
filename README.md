@@ -1,6 +1,6 @@
 # Primepore
 An analytical tool for detecting RNA modifications, capable of detecting three types of modifications and outputting modification predictions at the single-molecule level.
-# introduction
+# Introduction
 Primepore is a high-performance software tool designed to detect and quantify three RNA modifications—m6A, m5C, and inosine—from Nanopore Direct RNA Sequencing data. The workflow consists of four stages, delivering per-site probabilities, modification proportions, and single-molecule modification status.  
 ![alt](Primepore.svg)
 ## Key Features
