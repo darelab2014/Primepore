@@ -31,7 +31,7 @@ Primepore is a high-performance software tool designed to detect and quantify th
 | Data | Note |
 | :------------ |:---------------:|
 | fast5 files |containing raw current signals|
-| reference.fa      | genome.fa (hg19.fa or hg38.fa) |
+| reference.fa      | genome.fa (for homo sapiens: hg19.fa or hg38.fa) |
 | methylation_rate.csv      | methylation-rate groundtruth, needed only for training your own models |
 ## Environment:
 * Platform: Linux x86_64
