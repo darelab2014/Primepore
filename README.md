@@ -53,7 +53,7 @@ Primepore is a high-performance software tool designed to detect and quantify th
 # Installation
 It may take several minutes to install  
 ```
-git clone https://github.com/guodongxiaren/ImageCache/raw/master/Logo/foryou.gif
+git clone https://github.com/darelab2014/Primepore
 ```
 # Getting Started
 ## 1. Base calling and alignment
