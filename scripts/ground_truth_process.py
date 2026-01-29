@@ -51,7 +51,7 @@ def main():
         out_df = df[['contig', 'position', 'mod_ratio', 'y']].copy()
     else:
         df['mod_ratio'] = pd.to_numeric(df['mod_ratio'], errors='coerce')
-        df['y'] = (df['mod_ratio'] > 0.5).astype(int)
+        df['y'] = (df['mod_ratio'] > 0).astype(int)
         out_df = df[['contig', 'position', 'mod_ratio', 'y']].copy()
 
     # Determine output path: if not provided, save in the input file's directory
@@ -69,3 +69,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
