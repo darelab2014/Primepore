@@ -229,7 +229,7 @@ def accuracy(logits, y_true):
     correct_samples = torch.sum(indices == y_true)
     return float(correct_samples) / y_true.shape[0]
 def data_loader_process(feature_folder,batch_size,device):
-    feature_file = os.path.join(feature_folder, f"output_feature.feather")
+    feature_file = os.path.join(feature_folder, f"Classification_Train.feather")
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]

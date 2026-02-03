@@ -17,7 +17,7 @@ def read_truth_data(ground_truth):
 
 def write_chunk_data(chunk_data, out_file, i):
     if not chunk_data.empty:
-        chunk_data.to_feather(f"{out_file}data_processed_{i}.feather")
+        chunk_data.to_feather(f"{out_file}/data_processed_{i}.feather")
         print(f'Done {i}')
 def combine_data_and_truth(data, truth):
     merged_data = pd.merge(data, truth, on=['contig', 'position'], how='inner')
@@ -33,7 +33,7 @@ def combine_final_data(out_file_folder, final_out_file):
 
     if result:
         final_data = pd.concat(result).reset_index(drop=True)
-        final_data.to_feather(f"{final_out_file}data_processed.feather")
+        final_data.to_feather(f"{final_out_file}/data_processed.feather")
         print('Done saving data combined with ground truth')
 def write_raw_data(f5c_file,chunksize, out_file, final_out_file,ground_truth):
     reader = pd.read_csv(f5c_file, on_bad_lines='skip', sep='\t', quoting=csv.QUOTE_NONE, header=0, chunksize=chunksize)

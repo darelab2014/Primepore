@@ -83,8 +83,7 @@ class SimpleRegressionModel(nn.Module):
         x = F.relu(self.fc4(x))
         x = self.fc5(x)
         return x
-def data_loader_process(feature_folder,processed_data_template_floder,device):
-    feature_file = os.path.join(feature_folder, f"inference_result.feather")
+def data_loader_process(feature_file,processed_data_template_floder,device):
     data = pd.read_feather(feature_file)
     if not os.path.exists(processed_data_template_floder):
         os.makedirs(processed_data_template_floder)
@@ -223,12 +222,12 @@ def train(train_loader,val_loader,epochs,model_path,device):
 def main():
     #
     args = parse_args()
-    train_loader,val_loader=data_loader_process(args.feature_folder,args.processed_data_template_floder,args.device)
+    train_loader,val_loader=data_loader_process(args.feature_file,args.processed_data_template_floder,args.device)
     train(train_loader,val_loader,args.epochs,args.model_saved_folder,args.device)
 def parse_args():
     parser = argparse.ArgumentParser(description='Regression model training')
-    parser.add_argument('-f', '--feature_folder',type=str,
-                        help='the folder of the feature extraction output', metavar="character")
+    parser.add_argument('-f', '--feature_file',type=str,
+                        help='the file of the feature extraction output', metavar="character")
     parser.add_argument('-t', '--processed_data_template_floder', type=str,
                         help='template folder of the processed data', metavar="character")
     parser.add_argument('-m', '--model_saved_folder', type=str,

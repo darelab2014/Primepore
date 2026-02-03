@@ -230,8 +230,7 @@ def accuracy(logits, y_true):
     _, indices = torch.max(logits, 1)
     correct_samples = torch.sum(indices == y_true)
     return float(correct_samples) / y_true.shape[0]
-def data_loader_process(feature_folder,batch_size,device):
-    feature_file = os.path.join(feature_folder, f"output_feature.feather")
+def data_loader_process(feature_file,batch_size,device):
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]
@@ -284,8 +283,7 @@ def inference(test_loader,model_path,device):
             read_name_list.append(read_name[i])
     # acc=float(score_accum / count)
     return chr_list,position_list,read_name_list,pre_label1
-def add_the_predict_label(chr_list,position_list,read_name_list,pre_label,feature_folder,output_folder):
-    feature_file = os.path.join(feature_folder, f"output_feature.feather")
+def add_the_predict_label(chr_list,position_list,read_name_list,pre_label,feature_file,output_folder):
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]
@@ -302,13 +300,13 @@ def add_the_predict_label(chr_list,position_list,read_name_list,pre_label,featur
     print("Inference results have saved at " + str(save_file))
 def main():
     args = parse_args()
-    test_loader,cost_weights=data_loader_process(args.feature_folder,args.batch_size,args.device)
+    test_loader,cost_weights=data_loader_process(args.feature_file,args.batch_size,args.device)
     chr_list,position_list,read_name_list,pre_label1=inference(test_loader,args.model_saved_folder,args.device)
-    add_the_predict_label(chr_list,position_list,read_name_list,pre_label1, args.feature_folder,args.output_folder)
+    add_the_predict_label(chr_list,position_list,read_name_list,pre_label1, args.feature_file,args.output_folder)
 def parse_args():
     parser = argparse.ArgumentParser(description='Classification model inference')
-    parser.add_argument('-f', '--feature_folder',type=str,
-                        help='the folder of the feature extraction output', metavar="character")
+    parser.add_argument('-f', '--feature_file',type=str,
+                        help='the file of the feature extraction output', metavar="character")
     parser.add_argument('-m', '--model_saved_folder',type=str,
                         help='folder of the model saved', metavar="character")
     parser.add_argument('-o', '--output_folder', type=str,

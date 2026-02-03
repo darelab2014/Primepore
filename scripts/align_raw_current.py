@@ -66,7 +66,7 @@ def main():
     new_data = pd.read_feather(os.path.join(args.align_label_folder, "data_processed.feather"))
     unique_read_ids = new_data['read_name'].unique()
     # chunk_size = int(len(unique_read_ids) / 100)
-    print(np.ceil(len(unique_read_ids) / 10))
+    #print(np.ceil(len(unique_read_ids) / 10))
     chunk_size = int(len(unique_read_ids) / np.ceil(len(unique_read_ids) / 100))
     chunks = [unique_read_ids[i:i + chunk_size] for i in range(0, len(unique_read_ids), chunk_size)]
     # r5 = read(args.folder)
