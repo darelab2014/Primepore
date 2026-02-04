@@ -101,8 +101,8 @@ python align_raw_current.py -b file.blow5 -t template_output_folder -a path/alig
 ```
 * Required: Whether training or inference using your own data, feature extraction is necessary.
 ```
-# The input files contain align_raw_current output folder 'output_file_folder' and template output folder 'template_output_folder', finally output file 'output_feature.feather'
-python feature_extraction.py -a output_file_folder -t template_output_folder
+# The input files contain align_raw_current output file 'align_raw_current_output_file.feather' and template output folder 'template_output_folder', finally output file 'output_feature.feather' (must be path/*.feather)
+python feature_extraction.py -a path/align_raw_current_output_file.feather -t template_output_folder -o path/output_feature.feather
 ```
 ## 3. Classification model training and inference
 * Classification model training
