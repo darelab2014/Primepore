@@ -92,12 +92,12 @@ f5c eventalign -r combined_fastq -g reference.fa -b alignment_sorted_bam --slow5
 ## 2. Ground truth alignment and data preprocessing
 * Optional: If want to retrain the model using your own data, you need to align it with the ground truth.
 ```
-# The input files contain your groundtruth file 'your_groundtruth_file.csv', finally output the processed file 'groundtruth_file'
-python ground_truth_process.py -i 'your_groundtruth_file.csv'   
-# The input files contain event alignment file 'eventalign_output.csv', template output folder 'template_output_folder', finally output folder 'output_file_folder' and groundtruth file 'groundtruth_file'
-python align_label.py  -f eventalign_output.csv  -t template_output_folder -o output_file_folder -g groundtruth_file
-# The input files contain raw current file 'file.blow5', template output folder 'template_output_folder', align_label output folder 'align_label_folder' and finally output folder 'output_file_folder'
-python align_raw_current.py -b file.blow5 -t template_output_folder -a align_label_folder -o output_file_folder
+# The input files contain your groundtruth file 'your_groundtruth_file.csv', finally output the processed file 'groundtruth_file' (Default: Groundtruth.csv')
+python ground_truth_process.py -i 'your_groundtruth_file.csv' -o Groundtruth.csv
+# The input files contain event alignment file 'eventalign_output.csv', template output folder 'template_output_folder', finally output file 'align_label_output_file.feather' (must be path/*.feather) and groundtruth file 'groundtruth_file'
+python align_label.py  -f eventalign_output.csv  -t template_output_folder -o path/align_label_output_file.feather -g groundtruth_file
+# The input files contain raw current file 'file.blow5', template output folder 'template_output_folder', align_label output file 'path/align_label_output_file.feather' and finally output file 'align_raw_current_output_file.feather' (must be path/*.feather)
+python align_raw_current.py -b file.blow5 -t template_output_folder -a path/align_label_output_file.feather -o path/align_raw_current_output_file.feather
 ```
 * Required: Whether training or inference using your own data, feature extraction is necessary.
 ```
