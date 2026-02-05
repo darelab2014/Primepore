@@ -6,6 +6,7 @@ from torch import nn
 import numpy as np
 import torch.nn.functional as F
 import os
+import sys
 from torch.utils.data import Dataset, DataLoader, Sampler
 import warnings
 warnings.filterwarnings('ignore')
@@ -68,9 +69,9 @@ class SelfAttention(nn.Module):
 
         out = torch.matmul(attention, V)
         return out
-class SimpleRegressionModel(nn.Module):
+class RegressionModel(nn.Module):
     def __init__(self):
-        super(SimpleRegressionModel, self).__init__()
+        super(RegressionModel, self).__init__()
         self.fc1 = nn.Linear(32, 64)
         self.fc2 = nn.Linear(64, 128)
         self.fc3 = nn.Linear(128, 64)
@@ -163,7 +164,7 @@ def train(train_loader,val_loader,epochs,model_path,device):
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f"Failed to delete {file_path}. Reason: {e}")
-    model = SimpleRegressionModel().to(device)
+    model = RegressionModel().to(device)
     criterion = nn.MSELoss()
     optimizer = AdamW(model.parameters(), lr=1e-3, weight_decay=1e-5)
     loss_history = []
@@ -219,9 +220,29 @@ def train(train_loader,val_loader,epochs,model_path,device):
             best_val_rmse = val_rmse
             # Save model if this is your best validation score so far
             torch.save(model.state_dict(), os.path.join(model_path, model.__class__.__name__))
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     #
     args = parse_args()
+    check_suffix_and_continue(args.feature_file)
     train_loader,val_loader=data_loader_process(args.feature_file,args.processed_data_template_floder,args.device)
     train(train_loader,val_loader,args.epochs,args.model_saved_folder,args.device)
 def parse_args():

@@ -1,5 +1,6 @@
 from read5 import read
 import os
+import sys
 from datetime import datetime
 import argparse
 import pandas as pd
@@ -41,10 +42,31 @@ def process_chunk(chunks, new_data, folder_path, final_out_file, counter):
 def combine_final_read(out_file_folder, final_out_file):
     csv_files = glob.glob(os.path.join(out_file_folder, '*.feather'))
     combined_df = pd.concat([pd.read_feather(file) for file in csv_files])
-    combined_df.reset_index(drop=True).to_feather(f"{final_out_file}/final_read.feather")
+    combined_df.reset_index(drop=True).to_feather(final_out_file)
     print('Done saving data combined with ground truth')
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     args = parse_args()
+    check_suffix_and_continue(args.align_label_file)
+    check_suffix_and_continue(args.final_out_file)
     manager = Manager()
     counter = manager.Value('i', 0)
     if not os.path.exists(args.out_file_tem_folder):
@@ -63,7 +85,7 @@ def main():
                     shutil.rmtree(file_path)
             except Exception as e:
                 print(f"Failed to delete {file_path}. Reason: {e}")
-    new_data = pd.read_feather(os.path.join(args.align_label_folder, "data_processed.feather"))
+    new_data = pd.read_feather(args.align_label_file)
     unique_read_ids = new_data['read_name'].unique()
     # chunk_size = int(len(unique_read_ids) / 100)
     #print(np.ceil(len(unique_read_ids) / 10))
@@ -72,7 +94,7 @@ def main():
     # r5 = read(args.folder)
     # Use multiprocessing to parallelize chunk processing
     pool = Pool()
-    func_partial = partial(process_chunk,new_data=new_data, folder_path=args.blow5_folder,
+    func_partial = partial(process_chunk,new_data=new_data, folder_path=args.blow5_file,
                            final_out_file=args.out_file_tem_folder, counter=counter)
     list(pool.imap(func_partial, chunks))
     print("End reading fast5 files...")
@@ -80,16 +102,16 @@ def main():
     print("Done")
 def parse_args():
     parser = argparse.ArgumentParser(description='Align with the raw current file')
-    parser.add_argument('-b', '--blow5_folder', type=str,
-                        help='blow5 file folder', metavar="character")
+    parser.add_argument('-b', '--blow5_file', type=str,
+                        help='blow5 file', metavar="character")
     parser.add_argument('-t', '--out_file_tem_folder', type=str,
                         help='folder of the template files', metavar="character")
-    parser.add_argument('-a', '--align_label_folder', type=str,
-                        help='the folder of the align_label', metavar="character")
+    parser.add_argument('-a', '--align_label_file', type=str,
+                        help='the output file of the align_label', metavar="character")
     parser.add_argument('-c', '--chunk', default=10000000, type=int,
                         help='chunk size', metavar="integer")
     parser.add_argument('-o', '--final_out_file', type=str,
-                        help='final folder of the out_file', metavar="character")
+                        help='final output file (*.feather)', metavar="character")
     return parser.parse_args()
 if __name__ == "__main__":
     main()

@@ -3,6 +3,7 @@ import os
 import argparse
 import pandas as pd
 from tqdm import tqdm
+import sys
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -33,7 +34,7 @@ def combine_final_data(out_file_folder, final_out_file):
 
     if result:
         final_data = pd.concat(result).reset_index(drop=True)
-        final_data.to_feather(f"{final_out_file}/data_processed.feather")
+        final_data.to_feather(final_out_file)
         print('Done saving data combined with ground truth')
 def write_raw_data(f5c_file,chunksize, out_file, final_out_file,ground_truth):
     reader = pd.read_csv(f5c_file, on_bad_lines='skip', sep='\t', quoting=csv.QUOTE_NONE, header=0, chunksize=chunksize)
@@ -52,8 +53,28 @@ def write_raw_data(f5c_file,chunksize, out_file, final_out_file,ground_truth):
 
     print('Done saving sub data combined with ground truth')
     combine_final_data(out_file, final_out_file)
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     args = parse_args()
+    check_suffix_and_continue(args.final_out_file)
     write_raw_data(args.f5c_file, args.chunk, args.out_file_tem_folder, args.final_out_file, args.ground_truth)
     print("Done")
 def parse_args():
@@ -63,7 +84,7 @@ def parse_args():
     parser.add_argument('-t', '--out_file_tem_folder', type=str,
                         help='folder of the template files', metavar="character")
     parser.add_argument('-o', '--final_out_file', type=str,
-                        help='final folder of the out_file', metavar="character")
+                        help='final output file (*.feather)', metavar="character")
     parser.add_argument('-c', '--chunk', default=10000000, type=int,
                         help='chunk size', metavar="integer")
     parser.add_argument('-g', '--ground_truth', type=str,

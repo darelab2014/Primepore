@@ -5,6 +5,7 @@ import torch
 from torch import nn
 import numpy as np
 import os
+import sys
 import torch.nn.functional as F
 from collections import OrderedDict
 from torch.utils.data import Dataset, DataLoader
@@ -228,8 +229,7 @@ def accuracy(logits, y_true):
     _, indices = torch.max(logits, 1)
     correct_samples = torch.sum(indices == y_true)
     return float(correct_samples) / y_true.shape[0]
-def data_loader_process(feature_folder,batch_size,device):
-    feature_file = os.path.join(feature_folder, f"Classification_Train.feather")
+def data_loader_process(feature_file,batch_size,device):
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]
@@ -314,14 +314,34 @@ def train(train_loader,val_loader,cost_weights,epochs,model_path,device):
                 val_score_history[-1],
                 np.max(np.array(best_score))
             ))
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     args = parse_args()
-    train_loader,val_loader,cost_weights=data_loader_process(args.feature_folder,args.batch_size,args.device)
+    check_suffix_and_continue(args.feature_file)
+    train_loader,val_loader,cost_weights=data_loader_process(args.feature_file,args.batch_size,args.device)
     train(train_loader,val_loader,cost_weights,args.epochs,args.model_saved_folder,args.device)
 def parse_args():
     parser = argparse.ArgumentParser(description='Classification model training')
-    parser.add_argument('-f', '--feature_folder',type=str,
-                        help='the folder of the feature extraction output', metavar="character")
+    parser.add_argument('-f', '--feature_file',type=str,
+                        help='the file of the feature extraction output', metavar="character")
     parser.add_argument('-m', '--model_saved_folder',type=str,
                         help='folder of the model need to save', metavar="character")
     parser.add_argument('-e', '--epochs', default=100, type=int,

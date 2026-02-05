@@ -7,6 +7,7 @@ from sklearn.cluster import KMeans
 import numpy as np
 from tqdm import tqdm
 import os
+import sys
 import pandas as pd
 import warnings
 warnings.filterwarnings('ignore')
@@ -175,9 +176,8 @@ def train(data, pred_mod_ratio,position, model, num_epochs,device):
         row.append([abs(pre_positive / len(y_pred) - pred_mod_ratio),y_pred,cluster_centers])
     y_pred_1=row[np.argmin([item[0] for item in row])][1]
     return y_pred_1
-def run_single_molecule(feature_folder,epochs,device,output_folder):
+def run_single_molecule(feature_file,epochs,device,output_file):
     model = single_molecule_model(n_clusters=2, autoencoder=AutoEncoder().to(device), hidden=4, cluster_centers=None, alpha=1.0).to(device)
-    feature_file = os.path.join(feature_folder, f"regression_inference_result.feather")
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]
@@ -196,20 +196,41 @@ def run_single_molecule(feature_folder,epochs,device,output_folder):
         data.loc[data['position'] == position[i], 'single_molecule_label'] = y_pred
 
     # data['normalized_current'] = data['normalized_current'].apply(lambda x: ','.join(map(str, x)))
-    save_file = os.path.join(output_folder, 'single_molecule_result.feather')
+    save_file = output_file
     data.dropna().reset_index(drop=True).to_feather(
         save_file)
     print("Single molecule results have saved at " + str(save_file))
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     args = parse_args()
-    run_single_molecule(args.feature_folder,args.epochs,args.device,args.output_folder)
+    check_suffix_and_continue(args.feature_file)
+    check_suffix_and_continue(args.output_file)
+    run_single_molecule(args.feature_file,args.epochs,args.device,args.output_file)
 def parse_args():
     parser = argparse.ArgumentParser(description='Single molecule results',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-f', '--feature_folder',type=str,
-                        help='the folder of the feature extraction output', metavar="character")
-    parser.add_argument('-o', '--output_folder',type=str,
-                        help='inference result save folder', metavar="character")
+    parser.add_argument('-f', '--feature_file',type=str,
+                        help='the file of the feature extraction output', metavar="character")
+    parser.add_argument('-o', '--output_file',type=str,
+                        help='single molecule result save file', metavar="character")
     parser.add_argument('-e', '--epochs', default=100, type=int,
                         help='model training epochs', metavar="integer")
     parser.add_argument('-d',"--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu",

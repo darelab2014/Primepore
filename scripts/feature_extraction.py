@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import sys
 import argparse
 import pandas as pd
 import warnings
@@ -227,7 +228,7 @@ def process_data(file,num_parts,template_folder):
             # Save the chunk to a separate feather file
             file_name = os.path.join(template_folder, f"{s}_part_{i + 1}.feather")
             data_chunk.reset_index(drop=True).to_feather(file_name)
-def combined_data(num_parts,template_folder):
+def combined_data(num_parts,template_folder,final_out_file):
     result = []
     for i in range(num_parts):
         for j in range(num_parts):
@@ -324,25 +325,46 @@ def combined_data(num_parts,template_folder):
         return np.concatenate((row['normalized_current'], values_to_append))
 
     processed_data['normalized_current'] = processed_data.apply(append_values_to_array, axis=1)
-    output_file_name= os.path.join(os.path.dirname(os.path.abspath(template_folder)), "output_feature.feather")
+    # output_file_name= os.path.join(os.path.dirname(os.path.abspath(template_folder)), "output_feature.feather")
     processed_data.dropna().reset_index(drop=True).to_feather(
-        output_file_name)
+        final_out_file)
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     # 解析命令行参数
     args = parse_args()
-    process_data(os.path.join(args.align_raw_current_folder, f"final_read.feather"),args.chunk,args.out_file_tem_folder)
-    combined_data(args.chunk,args.out_file_tem_folder)
+    check_suffix_and_continue(args.align_raw_current_file)
+    check_suffix_and_continue(args.final_out_file)
+    process_data(args.align_raw_current_file,args.chunk,args.out_file_tem_folder)
+    combined_data(args.chunk,args.out_file_tem_folder,args.final_out_file)
 def parse_args():
     """解析命令行参数"""
     parser = argparse.ArgumentParser(description='Feature extraction')
-    parser.add_argument('-a', '--align_raw_current_folder',type=str,
-                        help='the folder of the align_raw_current', metavar="character")
+    parser.add_argument('-a', '--align_raw_current_file',type=str,
+                        help='the output file of the align_raw_current', metavar="character")
     parser.add_argument('-t', '--out_file_tem_folder',type=str,
                         help='folder of the template files', metavar="character")
     parser.add_argument('-c', '--chunk', default=2, type=int,
                         help='chunk size', metavar="integer")
-    # parser.add_argument('-o', '--final_out_file', type=str,
-    #                     help='final folder of the out_file', metavar="character")
+    parser.add_argument('-o', '--final_out_file', type=str,
+                         help='final output file (*.feather)', metavar="character")
     return parser.parse_args()
 if __name__ == "__main__":
     main()

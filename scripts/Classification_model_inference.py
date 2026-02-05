@@ -5,6 +5,7 @@ import torch
 from torch import nn
 import numpy as np
 import os
+import sys
 import torch.nn.functional as F
 from collections import OrderedDict
 from torch.utils.data import Dataset, DataLoader
@@ -252,11 +253,11 @@ def data_loader_process(feature_file,batch_size,device):
     return test_loader,cost_weights
 def inference(test_loader,model_path,device):
     print("Model inference on "+str(device))
-    if not os.path.exists(model_path):
-        print("The model folder not exist")
+    file = os.path.join(model_path, 'Transformer1D')
+    if not os.path.exists(file):
+        print("The trained model file not exist")
         exit()
     model = Transformer1D(num_classes=2).to(device)
-    file = os.path.join(model_path,os.listdir(model_path)[0])
     state = torch.load(file, map_location=device)
     model.load_state_dict(state)
     model.to(device)
@@ -298,8 +299,28 @@ def add_the_predict_label(chr_list,position_list,read_name_list,pre_label,featur
     data_with_label.dropna().reset_index(drop=True).to_feather(
         save_file)
     print("Inference results have saved at " + str(save_file))
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     args = parse_args()
+    check_suffix_and_continue(args.feature_file)
     test_loader,cost_weights=data_loader_process(args.feature_file,args.batch_size,args.device)
     chr_list,position_list,read_name_list,pre_label1=inference(test_loader,args.model_saved_folder,args.device)
     add_the_predict_label(chr_list,position_list,read_name_list,pre_label1, args.feature_file,args.output_folder)

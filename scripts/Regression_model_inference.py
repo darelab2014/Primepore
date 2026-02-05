@@ -5,6 +5,7 @@ from torch import nn
 import numpy as np
 import torch.nn.functional as F
 import os
+import sys
 from torch.utils.data import Dataset, DataLoader, Sampler
 import warnings
 warnings.filterwarnings('ignore')
@@ -68,9 +69,9 @@ class SelfAttention(nn.Module):
 
         out = torch.matmul(attention, V)
         return out
-class SimpleRegressionModel(nn.Module):
+class RegressionModel(nn.Module):
     def __init__(self):
-        super(SimpleRegressionModel, self).__init__()
+        super(RegressionModel, self).__init__()
         self.fc1 = nn.Linear(32, 64)
         self.fc2 = nn.Linear(64, 128)
         self.fc3 = nn.Linear(128, 64)
@@ -111,12 +112,13 @@ def data_loader_process(feature_folder,device):
     return test_loader
 def inference(test_loader,model_path,device):
     print("Model inference on " + str(device))
+    file = os.path.join(model_path, 'RegressionModel')
     if not os.path.exists(model_path):
         os.makedirs(model_path)
-        print("The model folder not exist")
+        print("The model file not exist")
         exit()
-    model = SimpleRegressionModel().to(device)
-    file = os.path.join(model_path, os.listdir(model_path)[0])
+    model = RegressionModel().to(device)
+
     state = torch.load(file, map_location=device)
     model.load_state_dict(state)
     model.eval()
@@ -138,8 +140,7 @@ def inference(test_loader,model_path,device):
                 position_list.append(position[i].tolist())
                 read_name_list.append(read_name[i])
     return chr_list, position_list, read_name_list, pre_value
-def add_the_predict_value(chr_list,position_list,read_name_list,pre_label,feature_folder,output_folder):
-    feature_file = os.path.join(feature_folder, f"classification_inference_result.feather")
+def add_the_predict_value(chr_list,position_list,read_name_list,pre_label,feature_file,output_file):
     data = pd.read_feather(feature_file)
     contains_only_na = data['normalized_current'].apply(lambda x: any(np.isnan(val) for val in x))
     data = data[~contains_only_na]
@@ -149,25 +150,46 @@ def add_the_predict_value(chr_list,position_list,read_name_list,pre_label,featur
         'read_name': read_name_list,
         'pre_value': pre_label
     })
-    save_file = os.path.join(output_folder, 'regression_inference_result.feather')
+    save_file = output_file
     data_with_label = data.merge(predicted_df, how='left', on=['contig', 'position', 'read_name'])
     data_with_label.dropna().reset_index(drop=True).to_feather(
         save_file)
     print("Inference results have saved at " + str(save_file))
+def latest_file_in_dir(directory: str) -> str:
+    last_mtime = -1
+    latest_path = None
+    for name in os.listdir(directory):
+        full = os.path.join(directory, name)
+    if os.path.isfile(full):
+        mtime = os.path.getmtime(full)
+    if mtime > last_mtime:
+        last_mtime = mtime
+    latest_path = full
+    return latest_path
+def check_suffix_and_continue(path: str) -> None:
+    if path is None:
+        print("No files were found to be checked in the directory.")
+        sys.exit(1)
+    _, ext = os.path.splitext(path)
+    if ext.lower() != ".feather":
+        print("The file extension needs to be set to .feather")
+        sys.exit(1)
 def main():
     # 解析命令行参数
     args = parse_args()
-    test_loader=data_loader_process(args.feature_folder,args.device)
+    check_suffix_and_continue(args.feature_file)
+    check_suffix_and_continue(args.output_file)
+    test_loader=data_loader_process(args.feature_file,args.device)
     chr_list, position_list, read_name_list, pre_value=inference(test_loader,args.model_saved_folder,args.device)
-    add_the_predict_value(chr_list, position_list, read_name_list, pre_value, args.feature_folder, args.output_folder)
+    add_the_predict_value(chr_list, position_list, read_name_list, pre_value, args.feature_file, args.output_file)
 def parse_args():
     parser = argparse.ArgumentParser(description='Regression model inference')
-    parser.add_argument('-f', '--feature_folder',type=str,
+    parser.add_argument('-f', '--feature_file',type=str,
                         help='the folder of the feature extraction output', metavar="character")
     parser.add_argument('-m', '--model_saved_folder', type=str,
                         help='folder of the model saved', metavar="character")
-    parser.add_argument('-o', '--output_folder', type=str,
-                        help='inference result save folder', metavar="character")
+    parser.add_argument('-o', '--output_file', type=str,
+                        help='inference result save file', metavar="character")
     parser.add_argument('-d',"--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu",
                         help="Device to use for training (cuda or cpu).")
     return parser.parse_args()
